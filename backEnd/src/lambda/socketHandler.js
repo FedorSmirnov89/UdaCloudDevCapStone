@@ -1,6 +1,7 @@
 // Class handling the connection to and the disconnection
 // from the web socket
 
+const socketMethods = require('../libs/ApiGateway')
 
 const successMessage = {
     statusCode: 200
@@ -15,6 +16,18 @@ const incorrectCallMessage = {
 // Called when a client connects to the socket
 async function connectHandler(event, context){
     console.log('Connection successful')
+    console.log(event)
+    
+    const connectionId = event.requestContext.connectionId
+    const endpoint = event.requestContext.domainName + '/' + event.requestContext.stage
+    
+    // test for now: write messages back
+    messages = ["message1", "message2"]
+    body = {msgs: messages}
+    
+    await socketMethods.sendMessage(connectionId, {result: 'bla'}, endpoint)
+    
+
     return successMessage
 }
 
@@ -28,7 +41,13 @@ async function disconnectHandler(event, context){
 // Called when an unknown method is requested
 async function defaultHandler(event, context){
     console.log('Call to unspecified method')
-    return incorrectCallMessage
+
+    const connectionId = event.requestContext.connectionId
+    const endpoint = event.requestContext.domainName + '/' + event.requestContext.stage
+
+    await socketMethods.sendMessage(connectionId, {result: 'bla'}, endpoint)
+
+    return successMessage
 }
 
 
