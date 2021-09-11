@@ -9,13 +9,19 @@ provider:
   lambdaHashingVersion: 20201221
   websocketsApiName: capstone-websocket-api
   websocketsApiRouteSelectionExpression: $request.body.action
+  
 
 functions:
+
+  Auth: 
+    handler: src/lambda/authorizer.handler
   
   connectHandler:
     handler: src/lambda/socketHandler.connectHandler
     events:
-      - websocket: $connect
+      - websocket:
+          route: $connect
+          authorizer: Auth
       
   
   disconnectHandler:
