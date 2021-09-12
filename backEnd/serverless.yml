@@ -21,7 +21,10 @@ functions:
     events:
       - websocket:
           route: $connect
-          authorizer: Auth
+          authorizer: 
+            name: Auth
+            identitySource:
+              - 'route.request.querystring.Auth'
       
   
   disconnectHandler:
