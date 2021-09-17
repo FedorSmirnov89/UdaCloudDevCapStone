@@ -2,6 +2,7 @@
 // from the web socket
 
 import {addConnection, removeConnection} from '../businessLogic/sessions'
+import {checkUserEntry} from '../businessLogic/users'
 
 const socketMethods = require('../libs/ApiGateway')
 
@@ -28,6 +29,9 @@ export const connectHandler = async (event, context) => {
 
     // enter the connection 
     await addConnection(princId, connectionId)
+    
+    // check whether the user already has an entry in the user DB and enter it if not
+    await checkUserEntry(princId)
 
     // test for now: write messages back
 
