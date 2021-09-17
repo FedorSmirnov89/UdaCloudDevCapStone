@@ -2,6 +2,8 @@
  * File containing convenience methods related to the API gateway.
  */
 
+
+
  const aws = require('aws-sdk')
  const configs = require('../configs')
 

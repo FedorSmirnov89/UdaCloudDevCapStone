@@ -1,4 +1,4 @@
-import React from 'react' 
+import React, {useEffect, useState} from 'react' 
 
 import {useAuth0} from '@auth0/auth0-react'
 import {Chat} from './Chat'
@@ -6,15 +6,43 @@ import {configs} from '../configs'
 
 const ChatRoute = () => {
 
-    const {user} = useAuth0()
+    const {user, getAccessTokenSilently} = useAuth0()
+
+    const [socket, setSocket] = useState(configureSocket)
+    const [accessToken, setAccessToken] = useState(null)
     
-    const socket = configureSocket()
+    useEffect(
+        () => {
+
+
+            const getAcToken = async() => {
+                const domain = configs.auth0.domain
+
+                try{
+                const acToken = await getAccessTokenSilently({
+                    audience: `https://${domain}/api/v2/`,
+                    scope: "read:current_user"
+                })
+
+                console.log(`Access token ${acToken}`)
+                }catch(e){
+                    console.log(`Error message ${e.message}`)
+                }
+            }
+
+            getAcToken()
+        }
+    )
 
     return (
         <Chat userName={user.name} />
     )
 
 }
+
+
+
+
 
 const configureSocket = () => {
         const socketQuery = `${configs.backend.address}?Auth=token`
