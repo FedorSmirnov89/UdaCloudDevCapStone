@@ -7,3 +7,7 @@ export const authConfig = {
   clientId: 'pdrDez3MkLPR5Vxa9CYvM0MVwtNS3yDc',          // Auth0 client id
   callbackUrl: 'http://localhost:3000/callback'
 }
+
+export const socketMessages = {
+  getProfile: 'getProfileInfo'
+}

@@ -5,7 +5,7 @@
 
 
  const aws = require('aws-sdk')
- const configs = require('../configs')
+
 
 
 /**

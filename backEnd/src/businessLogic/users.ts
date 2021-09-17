@@ -29,3 +29,13 @@ export async function checkUserEntry(princID: string) {
         await dbAccessUser.createUserEntry(entry)
     }
 }
+
+/**
+ * Called to get the info for a given id
+ * 
+ * @param princId the given id
+ * 
+ */
+export async function getUserInfo(princId: string): Promise<UserItem> {
+    return dbAccessUser.getUserInformation(princId)
+}

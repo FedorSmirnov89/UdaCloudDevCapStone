@@ -1,7 +1,8 @@
 import React from 'react'
 import Auth from '../auth/Auth'
 import {History} from 'history'
-import {apiEndpoint} from '../config'
+import {apiEndpoint, socketMessages} from '../config'
+import { Grid, Header, Input } from 'semantic-ui-react'
 
 
 interface ChatProps{
@@ -15,13 +16,65 @@ interface ChatState{
 
 export class Chat extends React.PureComponent<ChatProps, ChatState>{
 
+    state: ChatState
+
+    constructor(props: ChatProps){
+        super(props)
+        this.state = {
+            socket: this.configureSocket()
+        }
+
+        this.onNickNameUpdate=this.onNickNameUpdate.bind(this)
+    }
+
+    onNickNameUpdate(){
+        console.log('get profile triggered')
+        const getProfileMessage = {
+            action: socketMessages.getProfile
+        }
+
+        this.state.socket.send(JSON.stringify(getProfileMessage))
+    }
+
+    handleNickNameChange(){
+        console.log('nickname changing')
+    }
+
+    
+
+    renderProfileInformation(){
+        return (
+            <div>
+                <Grid.Row>
+                    <Grid.Column width={8}>
+                        Your current nickname is bla. You can update it by using the button below.
+                    </Grid.Column>
+                    <Grid.Column width={8}>
+                        <Input
+                            action={{
+                                color: 'blue',
+                                labelPosition: 'right',
+                                icon: {undefined},
+                                content: 'Update Nickname',
+                                onClick: this.onNickNameUpdate
+                            }}
+                            fluid
+                            actionPosition={undefined}
+                            placeholder="replace by current nickname"
+                            onChange={this.handleNickNameChange}
+                        ></Input>
+                    </Grid.Column>
+                </Grid.Row>
+            </div>
+        )
+    }
+
     render(){
 
         return(
             <div>
-                <p>Hello, this is the home screen</p>
-                <p>Your id token is {this.props.auth.idToken}</p>
-                <p>Your access token is {this.props.auth.accessToken}</p>
+                <Header as="h1">Chat Application</Header>
+                {this.renderProfileInformation()}                
             </div>
             
         )
@@ -29,7 +82,7 @@ export class Chat extends React.PureComponent<ChatProps, ChatState>{
     }
 
     componentDidMount(){
-        this.configureSocket()
+       
     }
 
     componentWillUnmount(){
@@ -65,7 +118,7 @@ export class Chat extends React.PureComponent<ChatProps, ChatState>{
             console.log(event)
         })
 
-        this.setState({socket: socket})
+        return socket
     }
 
 }

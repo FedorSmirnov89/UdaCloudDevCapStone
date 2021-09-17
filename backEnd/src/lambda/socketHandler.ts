@@ -2,19 +2,12 @@
 // from the web socket
 
 import {addConnection, removeConnection} from '../businessLogic/sessions'
+import {getConnectionInformation} from '../libs/Lambda'
 import {checkUserEntry} from '../businessLogic/users'
 
+import {socketInfo} from '../configs'
+
 const socketMethods = require('../libs/ApiGateway')
-
-const successMessage = {
-    statusCode: 200
-}
-
-/* const incorrectCallMessage = {
-    statusCode: 400,
-    message: 'Unknown request method'
-} */
-
 
 // Called when a client connects to the socket
 export const connectHandler = async (event, context) => {
@@ -24,8 +17,8 @@ export const connectHandler = async (event, context) => {
 
     const {connectionId, princId} = getConnectionInformation(event)
 
-    const endpoint = event.requestContext.domainName + '/' + event.requestContext.stage
-    console.log(`End point ${endpoint}`)
+    
+    console.log(`End point ${socketInfo.address}`)
 
     // enter the connection 
     await addConnection(princId, connectionId)
@@ -36,10 +29,10 @@ export const connectHandler = async (event, context) => {
     // test for now: write messages back
 
 
-    await socketMethods.sendMessage(connectionId, { result: 'bla' }, endpoint)
+    await socketMethods.sendMessage(connectionId, { result: 'bla' }, socketInfo.address)
 
 
-    return successMessage
+    return socketInfo.responseSuccess
 }
 
 
@@ -53,7 +46,7 @@ export const disconnectHandler = async (event, context) => {
 
     await removeConnection(princId, connectionId)
 
-    return successMessage
+    return socketInfo.responseSuccess
 }
 
 // Called when an unknown method is requested
@@ -67,15 +60,6 @@ export const defaultHandler = async (event, context) => {
 
     await socketMethods.sendMessage(connectionId, { result: 'bla' }, endpoint)
 
-    return successMessage
-}
-
-const getConnectionInformation = (event) => {
-    const connectionId = event.requestContext.connectionId
-    const princId = event.requestContext.authorizer.principalId
-    return {
-        connectionId: connectionId,
-        princId: princId
-    }
+    return socketInfo.responseSuccess
 }
 
