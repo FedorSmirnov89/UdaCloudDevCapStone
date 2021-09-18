@@ -18,7 +18,8 @@ export const socketInfo = {
 
 export const protocol = {
     toClient: {
-        updateProfile: 'updateProfile'
+        updateProfile: 'updateProfile',
+        uploadUrl: 'uploadUrl'
     }
 }
 

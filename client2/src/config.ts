@@ -12,9 +12,15 @@ export const socketMessages = {
 
   toServer: {
     getProfile: 'getProfileInfo',
-    updateProfile: 'updateProfileInfo'
+    updateProfile: 'updateProfileInfo',
+    getUploadUrl: 'getUploadUrl'
   },
   fromServer: {
-    updateProfile: 'updateProfile'
+    updateProfile: 'updateProfile',
+    uploadUrl: 'uploadUrl'
   }
+}
+
+export const getImageUrlForId = (princId: string) => {
+  return `https://fedor-uda-icon-bucket.s3.amazonaws.com/${princId.replace('|', '%7C')}`
 }
