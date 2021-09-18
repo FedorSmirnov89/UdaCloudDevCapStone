@@ -70,4 +70,24 @@ export class DbAccessUser {
         return result
     }
 
+    /**
+     * Updates the given entry in the user db
+     * @param entry the given entry
+     */
+    async updateUserEntry(entry : UserItem){
+        const {princId, nickName, imgUrl} = entry
+        var params = {
+            TableName: this.userTable,
+            Key:{
+                princId: princId
+            },
+            UpdateExpression: "set imgUrl = :i, nickName = :n",
+            ExpressionAttributeValues: {                
+                ":i": imgUrl,
+                ":n": nickName
+            },
+            ReturnValues: "UPDATED_NEW"
+        }
+        await this.docClient.update(params).promise()
+    }
 }

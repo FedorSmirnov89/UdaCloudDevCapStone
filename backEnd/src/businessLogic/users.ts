@@ -1,6 +1,7 @@
 
 import { DbAccessUser } from '../dataLayer/DbAccessUser'
 import { UserItem } from '../models/UserItem'
+import {ResponseProfileInfo} from '../models/ResponseProfileInfo'
 
 import {defaultProfile} from '../configs'
 
@@ -36,6 +37,15 @@ export async function checkUserEntry(princID: string) {
  * @param princId the given id
  * 
  */
-export async function getUserInfo(princId: string): Promise<UserItem> {
-    return dbAccessUser.getUserInformation(princId)
+export async function getUserInfo(princId: string): Promise<ResponseProfileInfo> {
+    return new ResponseProfileInfo(await dbAccessUser.getUserInformation(princId))
+}
+
+/**
+ * Updates the user entry 
+ * @param entry 
+ * @returns 
+ */
+export async function updateUserEntry(entry: UserItem){
+    return dbAccessUser.updateUserEntry(entry)    
 }

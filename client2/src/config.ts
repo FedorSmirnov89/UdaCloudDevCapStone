@@ -9,5 +9,12 @@ export const authConfig = {
 }
 
 export const socketMessages = {
-  getProfile: 'getProfileInfo'
+
+  toServer: {
+    getProfile: 'getProfileInfo',
+    updateProfile: 'updateProfileInfo'
+  },
+  fromServer: {
+    updateProfile: 'updateProfile'
+  }
 }
