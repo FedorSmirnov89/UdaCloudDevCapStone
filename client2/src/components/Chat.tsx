@@ -21,7 +21,8 @@ interface ChatState {
     nickName: string,
     imgUrl: string,
     newNickName: string,
-    file: any
+    file: any,
+    newMessage: string
 }
 
 
@@ -39,18 +40,21 @@ export class Chat extends React.PureComponent<ChatProps, ChatState>{
             nickName: '[retrieving]',
             imgUrl: '[retrieving]',
             newNickName: 'Enter new nickname',
-            file: undefined
+            file: undefined,
+            newMessage: ''
         }
 
         this.onNickNameUpdate = this.onNickNameUpdate.bind(this)
         this.updateProfileDisplay = this.updateProfileDisplay.bind(this)
         this.requestProfileUpdate = this.requestProfileUpdate.bind(this)
         this.handleNickNameChange = this.handleNickNameChange.bind(this)
+        this.handleMessageChange = this.handleMessageChange.bind(this)
         this.renderProfileImage = this.renderProfileImage.bind(this)
         this.getUploadUrl = this.getUploadUrl.bind(this)
         this.handleFileChange = this.handleFileChange.bind(this)
         this.getUploadUrl = this.getUploadUrl.bind(this)
         this.handleImageSubmit = this.handleImageSubmit.bind(this)
+        this.onMessageSend = this.onMessageSend.bind(this)
     }
 
     onNickNameUpdate() {
@@ -65,8 +69,24 @@ export class Chat extends React.PureComponent<ChatProps, ChatState>{
         this.state.socket.send(JSON.stringify(request))
     }
 
+    onMessageSend() {
+        console.log(`sending the message ${this.state.newMessage}`)
+        const request = {
+            action: socketMessages.toServer.sendMessage,
+            payload: {
+                message: this.state.newMessage,
+            }
+        }
+        this.state.socket.send(JSON.stringify(request))
+        this.setState({ newMessage: '' })
+    }
+
     handleNickNameChange(event: React.ChangeEvent<HTMLInputElement>) {
         this.setState({ newNickName: event.target.value })
+    }
+
+    handleMessageChange(event: React.ChangeEvent<HTMLInputElement>) {
+        this.setState({ newMessage: event.target.value })
     }
 
 
@@ -129,7 +149,7 @@ export class Chat extends React.PureComponent<ChatProps, ChatState>{
             <div>
                 <h3>Current profile image:</h3>
                 {
-                    <img src={imageNotSet ? noProfile : this.state.imgUrl} alt="profilePic" className="imgSetting" />
+                    <img src={imageNotSet ? noProfile : `${this.state.imgUrl}?${Date.now()}`} alt="profilePic" className="imgSetting" />
                 }
                 <Form onSubmit={this.handleImageSubmit}>
                     <Form.Field>
@@ -188,14 +208,65 @@ export class Chat extends React.PureComponent<ChatProps, ChatState>{
         )
     }
 
+    renderMessages() {
+        return (
+            <div>
+                <Grid.Row>
+                    <hr />
+                    <Grid.Column width={1}>
+                        <img src={`${this.state.imgUrl}?${Date.now()}`} alt="profilePic" className="imgDialogue" />
+                    </Grid.Column>
+                    <Grid.Column width={1}>
+                        <b>{`${this.state.nickName} at ${Date.now()}`}:</b>
+                    </Grid.Column>
+                    <Grid.Column width={1}>
+                        <i>bla bla bla</i>
+                    </Grid.Column>
+                    <hr />
+                </Grid.Row>
+            </div>
+        )
+    }
+
+    renderMessageSendButton() {
+        return (
+            <div>
+                <Grid.Row>
+                    <Grid.Column width={1}>
+                        <h3>Send a new message:</h3>
+                    </Grid.Column>
+                    <Grid.Column width={1}>
+                        <Input
+                            action={{
+                                color: 'blue',
+                                labelPosition: 'right',
+                                icon: { undefined },
+                                content: 'Send',
+                                onClick: this.onMessageSend,
+                            }}
+                            fluid
+                            actionPosition={undefined}
+                            value={this.state.newMessage}
+                            onChange={this.handleMessageChange}
+                            ref='messageSendButton'
+                        ></Input>
+                    </Grid.Column>
+                </Grid.Row>
+            </div>
+        )
+    }
+
     render() {
 
         return (
             <div>
                 <Header as="h1">Chat Application</Header>
-                <h2>Profile Information</h2>
+                <h2><b>Profile Information</b></h2>
                 {this.renderProfileInformation()}
                 {this.renderProfileImage()}
+                <h2><b>Chat Messages</b></h2>
+                {this.renderMessages()}                
+                {this.renderMessageSendButton()}
             </div>
 
         )
@@ -255,6 +326,7 @@ export class Chat extends React.PureComponent<ChatProps, ChatState>{
             }
             this.state.socket.send(JSON.stringify(request))
             alert('File was uploaded!')
+            this.forceUpdate()
         }
 
     }

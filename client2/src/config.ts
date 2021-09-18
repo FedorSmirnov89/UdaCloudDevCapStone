@@ -13,7 +13,8 @@ export const socketMessages = {
   toServer: {
     getProfile: 'getProfileInfo',
     updateProfile: 'updateProfileInfo',
-    getUploadUrl: 'getUploadUrl'
+    getUploadUrl: 'getUploadUrl',
+    sendMessage: 'sendMessage'
   },
   fromServer: {
     updateProfile: 'updateProfile',
