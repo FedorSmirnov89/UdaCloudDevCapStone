@@ -24,6 +24,9 @@ provider:
     MESSAGES_TABLE: MESSAGES_TABLE
     ICON_BUCKET: fedor-uda-icon-bucket
     URL_EXPIRE: URL_EXPIRE
+  tracing:
+    lambda: true
+    apiGateway: true
   
 
 functions:
