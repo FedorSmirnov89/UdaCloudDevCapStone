@@ -4,34 +4,19 @@
 import {addConnection, removeConnection} from '../businessLogic/sessions'
 import {getConnectionInformation} from '../libs/Lambda'
 import {checkUserEntry} from '../businessLogic/users'
-
 import {socketInfo} from '../configs'
-
-const socketMethods = require('../libs/ApiGateway')
 
 // Called when a client connects to the socket
 export const connectHandler = async (event, context) => {
     console.log('Connection successful')
     console.log(`Event ${JSON.stringify(event)}`)
     console.log(`Context ${JSON.stringify(context)}`)
-
     const {connectionId, princId} = getConnectionInformation(event)
-
-    
     console.log(`End point ${socketInfo.address}`)
-
     // enter the connection 
     await addConnection(princId, connectionId)
-    
     // check whether the user already has an entry in the user DB and enter it if not
     await checkUserEntry(princId)
-
-    // test for now: write messages back
-
-
-    await socketMethods.sendMessage(connectionId, { result: 'bla' }, socketInfo.address)
-
-
     return socketInfo.responseSuccess
 }
 
@@ -54,12 +39,6 @@ export const defaultHandler = async (event, context) => {
     console.log('Call to unspecified method')
     console.log(`Event ${JSON.stringify(event)}`)
     console.log(`Context ${JSON.stringify(context)}`)
-
-    const connectionId = event.requestContext.connectionId
-    const endpoint = event.requestContext.domainName + '/' + event.requestContext.stage
-
-    await socketMethods.sendMessage(connectionId, { result: 'bla' }, endpoint)
-
-    return socketInfo.responseSuccess
+    return socketInfo.responseWrongRoute
 }
 

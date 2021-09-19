@@ -14,11 +14,13 @@ export const socketMessages = {
     getProfile: 'getProfileInfo',
     updateProfile: 'updateProfileInfo',
     getUploadUrl: 'getUploadUrl',
-    sendMessage: 'sendMessage'
+    sendMessage: 'sendMessage',
+    getMessages: 'getMessages'
   },
   fromServer: {
     updateProfile: 'updateProfile',
-    uploadUrl: 'uploadUrl'
+    uploadUrl: 'uploadUrl',
+    updateMessages: 'updateMessages'
   }
 }
 

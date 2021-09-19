@@ -20,7 +20,7 @@ export class DbAccessUser {
      * 
      * @param userEntry the user entry to add    
      */
-    async createUserEntry(userEntry : UserItem){
+    async createUserEntry(userEntry: UserItem) {
 
         const item = {
             ...userEntry
@@ -39,7 +39,7 @@ export class DbAccessUser {
      * 
      * @param princId the princ id of the entry to retrieve
      */
-    async getUserInformation(princId : string) : Promise<UserItem>{
+    async getUserInformation(princId: string): Promise<UserItem> {
         const params = {
             TableName: this.userTable,
             Key: {
@@ -57,7 +57,7 @@ export class DbAccessUser {
      * @param princId the provided user ID
      * 
      */
-    async userEntryExists(princId : string): Promise<Boolean>{
+    async userEntryExists(princId: string): Promise<Boolean> {
         const params = {
             TableName: this.userTable,
             Key: {
@@ -74,15 +74,15 @@ export class DbAccessUser {
      * Updates the given entry in the user db
      * @param entry the given entry
      */
-    async updateUserEntry(entry : UserItem){
-        const {princId, nickName, imgUrl} = entry
+    async updateUserEntry(entry: UserItem) {
+        const { princId, nickName, imgUrl } = entry
         var params = {
             TableName: this.userTable,
-            Key:{
+            Key: {
                 princId: princId
             },
             UpdateExpression: "set imgUrl = :i, nickName = :n",
-            ExpressionAttributeValues: {                
+            ExpressionAttributeValues: {
                 ":i": imgUrl,
                 ":n": nickName
             },

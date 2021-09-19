@@ -21,6 +21,7 @@ provider:
     SESSIONS_TABLE: SESSIONS_TABLE
     SESSIONS_INDEX: SESSIONS_INDEX
     USERS_TABLE: USERS_TABLE2
+    MESSAGES_TABLE: MESSAGES_TABLE
     ICON_BUCKET: fedor-uda-icon-bucket
     URL_EXPIRE: URL_EXPIRE
   
@@ -52,11 +53,6 @@ functions:
       Action:
         - dynamodb:GetItem
       Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.USERS_TABLE}
-    - Effect: Allow
-      Action:
-        - execute-api:ManageConnections
-      Resource: arn:aws:execute-api:${self:provider.region}:*:*
-      
   
   disconnectHandler:
     handler: src/lambda/socketHandler.disconnectHandler
@@ -116,6 +112,44 @@ functions:
         - s3:PutObject
       Resource: arn:aws:s3:::${self:provider.environment.ICON_BUCKET}/*
 
+  processMessage:
+    handler: src/lambda/processMessage.handler
+    events:
+      - websocket: sendMessage
+    iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:GetItem
+      Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.USERS_TABLE}
+    - Effect: Allow
+      Action:
+        - dynamodb:PutItem
+        - dynamodb:Query
+      Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.MESSAGES_TABLE}
+    - Effect: Allow
+      Action:
+        - dynamodb:Scan        
+      Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.SESSIONS_TABLE}
+    - Effect: Allow
+      Action:
+        - execute-api:ManageConnections
+      Resource: arn:aws:execute-api:${self:provider.region}:*:*
+
+  getCurrentMessages:
+    handler: src/lambda/getCurrentMessages.handler
+    events:
+      - websocket: getMessages
+    iamRoleStatements:
+    - Effect: Allow
+      Action:        
+        - dynamodb:Query
+      Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.MESSAGES_TABLE}    
+    - Effect: Allow
+      Action:
+        - execute-api:ManageConnections
+      Resource: arn:aws:execute-api:${self:provider.region}:*:*
+    
+
 
 resources:
 
@@ -161,6 +195,23 @@ resources:
             KeyType: HASH          
         BillingMode: PAY_PER_REQUEST
         TableName: ${self:provider.environment.USERS_TABLE}
+
+    # Table to store the chat messages
+    MessageTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: postDay
+            AttributeType: S
+          - AttributeName: postDate
+            AttributeType: S                    
+        KeySchema:
+          - AttributeName: postDay
+            KeyType: HASH
+          - AttributeName: postDate
+            KeyType: RANGE          
+        BillingMode: PAY_PER_REQUEST
+        TableName: ${self:provider.environment.MESSAGES_TABLE}
 
     # The s3 bucket for the profile pictures
     IconBucket:

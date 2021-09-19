@@ -4,6 +4,7 @@ import { History } from 'history'
 import { apiEndpoint, socketMessages, getImageUrlForId } from '../config'
 import { Grid, Header, Input, Form, Button } from 'semantic-ui-react'
 import { UserItem } from '../types/UserItem'
+import { Message } from '../types/Message'
 import Axios from 'axios'
 
 import './Chat.css'
@@ -22,7 +23,8 @@ interface ChatState {
     imgUrl: string,
     newNickName: string,
     file: any,
-    newMessage: string
+    newMessage: string,
+    shownMessages: Message[]
 }
 
 
@@ -30,8 +32,6 @@ interface ChatState {
 export class Chat extends React.PureComponent<ChatProps, ChatState>{
 
     state: ChatState
-
-
 
     constructor(props: ChatProps) {
         super(props)
@@ -41,7 +41,8 @@ export class Chat extends React.PureComponent<ChatProps, ChatState>{
             imgUrl: '[retrieving]',
             newNickName: 'Enter new nickname',
             file: undefined,
-            newMessage: ''
+            newMessage: '',
+            shownMessages: []
         }
 
         this.onNickNameUpdate = this.onNickNameUpdate.bind(this)
@@ -70,11 +71,16 @@ export class Chat extends React.PureComponent<ChatProps, ChatState>{
     }
 
     onMessageSend() {
-        console.log(`sending the message ${this.state.newMessage}`)
+        const postDate = this.getPostDate()
+        const postDay = this.getPostDay()
+        // send the message and empty the message input
+        console.log(`sending the message ${this.state.newMessage}; date: ${postDate}; day: ${postDay}`)
         const request = {
             action: socketMessages.toServer.sendMessage,
             payload: {
-                message: this.state.newMessage,
+                content: this.state.newMessage,
+                postDay: postDay,
+                postDate: postDate
             }
         }
         this.state.socket.send(JSON.stringify(request))
@@ -89,6 +95,22 @@ export class Chat extends React.PureComponent<ChatProps, ChatState>{
         this.setState({ newMessage: event.target.value })
     }
 
+    requestMessagesUpdate() {
+        console.log('requesting messages update')
+        this.state.socket.send(JSON.stringify({
+            action: socketMessages.toServer.getMessages,
+            payload: this.getPostDay()
+        }))
+    }
+
+    getPostDay(): string {
+        const date = new Date()
+        return date.toISOString().split('T')[0]
+    }
+
+    getPostDate(): string {
+        return new Date().toISOString()
+    }
 
     requestProfileUpdate() {
         console.log('requesting profile update')
@@ -209,22 +231,33 @@ export class Chat extends React.PureComponent<ChatProps, ChatState>{
     }
 
     renderMessages() {
+        if (this.state.shownMessages.length === 0) {
+            return (
+                <p>So far, no messages have been posted today.</p>
+            )
+        } else {
+            console.log(`We have following messages: ${JSON.stringify(this.state.shownMessages)}`)
+            return this.state.shownMessages.map((sMsg, key) => this.renderMessage(sMsg, key))
+        }
+    }
+
+    renderMessage(message: Message, key: number) {
+        console.log(`rendering message ${JSON.stringify(message)}`)
+        const adjustedDate: Date = new Date(message.dateString)
+        const adjustedDateString: string = `${adjustedDate.getHours()}:${adjustedDate.getMinutes()}:${adjustedDate.getSeconds()} - ${adjustedDate.toDateString()}`
         return (
-            <div>
-                <Grid.Row>
-                    <hr />
-                    <Grid.Column width={1}>
-                        <img src={`${this.state.imgUrl}?${Date.now()}`} alt="profilePic" className="imgDialogue" />
-                    </Grid.Column>
-                    <Grid.Column width={1}>
-                        <b>{`${this.state.nickName} at ${Date.now()}`}:</b>
-                    </Grid.Column>
-                    <Grid.Column width={1}>
-                        <i>bla bla bla</i>
-                    </Grid.Column>
-                    <hr />
-                </Grid.Row>
-            </div>
+            <Grid.Row key={key}>
+                <Grid.Column width={1}>
+                    <img src={`${message.imgUrl}?${Date.now()}`} alt="profilePic" className="imgDialogue" />
+                </Grid.Column>
+                <Grid.Column width={1}>
+                    <b>{`${message.nickName} at ${adjustedDateString}`}:</b>
+                </Grid.Column>
+                <Grid.Column width={1}>
+                    <i>{message.content}</i>
+                </Grid.Column>
+                <hr />
+            </Grid.Row>
         )
     }
 
@@ -265,7 +298,7 @@ export class Chat extends React.PureComponent<ChatProps, ChatState>{
                 {this.renderProfileInformation()}
                 {this.renderProfileImage()}
                 <h2><b>Chat Messages</b></h2>
-                {this.renderMessages()}                
+                {this.renderMessages()}
                 {this.renderMessageSendButton()}
             </div>
 
@@ -288,6 +321,7 @@ export class Chat extends React.PureComponent<ChatProps, ChatState>{
         socket.addEventListener('open', event => {
             console.log('socket open')
             this.requestProfileUpdate()
+            this.requestMessagesUpdate()
         })
 
         // message handler
@@ -327,7 +361,24 @@ export class Chat extends React.PureComponent<ChatProps, ChatState>{
             this.state.socket.send(JSON.stringify(request))
             alert('File was uploaded!')
             this.forceUpdate()
-        }
+        } else if (action === socketMessages.fromServer.updateMessages) {
+            const shownMessages: Message[] = []
+            for (const key in body.messages) {
+                console.log(JSON.stringify(body.messages[key]))
+                const { content, nickName, imgUrl, postDate } = body.messages[key]
+                const sMsg: Message = {
+                    content: content,
+                    nickName: nickName,
+                    imgUrl: imgUrl,
+                    dateString: postDate
+                }
+                console.log(`Pushing ${JSON.stringify(sMsg)}`)
+                shownMessages.push(sMsg)
+            }
 
+            this.setState({ shownMessages: shownMessages })
+        } else {
+            console.log(`Unknown action received from server: ${action}`)
+        }
     }
 }
